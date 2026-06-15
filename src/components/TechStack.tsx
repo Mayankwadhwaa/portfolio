@@ -52,6 +52,14 @@ const spheres = imageUrls.map(() => ({
   scale: [0.7, 1, 0.8, 1, 1][Math.floor(Math.random() * 5)],
 }));
 
+// Touch / small-screen devices (phones, iPads) get a lighter scene: capped
+// pixel ratio, no shadows, no ambient-occlusion pass, and fewer physics bodies.
+const isLite =
+  typeof navigator !== "undefined" &&
+  ((navigator.maxTouchPoints || 0) > 1 ||
+    (typeof window !== "undefined" && window.innerWidth < 1024));
+const activeSpheres = isLite ? spheres.slice(0, 18) : spheres;
+
 type SphereProps = {
   vec?: THREE.Vector3;
   scale: number;
@@ -182,7 +190,8 @@ const TechStack = () => {
       <h2> My Techstack</h2>
 
       <Canvas
-        shadows
+        shadows={!isLite}
+        dpr={isLite ? 1 : [1, 2]}
         gl={{ alpha: true, stencil: false, depth: false, antialias: false }}
         camera={{ position: [0, 0, 20], fov: 32.5, near: 1, far: 100 }}
         onCreated={(state) => (state.gl.toneMappingExposure = 1.5)}
@@ -200,7 +209,7 @@ const TechStack = () => {
         <directionalLight position={[0, 5, -4]} intensity={2} />
         <Physics gravity={[0, 0, 0]}>
           <Pointer isActive={isActive} />
-          {spheres.map((props, i) => (
+          {activeSpheres.map((props, i) => (
             <SphereGeo
               key={i}
               {...props}
@@ -214,9 +223,11 @@ const TechStack = () => {
           environmentIntensity={0.5}
           environmentRotation={[0, 4, 2]}
         />
-        <EffectComposer enableNormalPass={false}>
-          <N8AO color="#0f002c" aoRadius={2} intensity={1.15} />
-        </EffectComposer>
+        {!isLite && (
+          <EffectComposer enableNormalPass={false}>
+            <N8AO color="#0f002c" aoRadius={2} intensity={1.15} />
+          </EffectComposer>
+        )}
       </Canvas>
     </div>
   );

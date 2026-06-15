@@ -32,7 +32,9 @@ const Scene = () => {
         antialias: true,
       });
       renderer.setSize(container.width, container.height);
-      renderer.setPixelRatio(window.devicePixelRatio);
+      // Cap pixel ratio — retina phones report 3x, which renders ~9x the pixels
+      // and is the single biggest cause of mobile/iPad lag here.
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1;
       canvasDiv.current.appendChild(renderer.domElement);
@@ -106,8 +108,18 @@ const Scene = () => {
         landingDiv.addEventListener("touchstart", onTouchStart);
         landingDiv.addEventListener("touchend", onTouchEnd);
       }
+      // Only render while the hero is actually on screen (and the tab is
+      // visible) — saves GPU and keeps scrolling smooth further down the page.
+      let heroVisible = true;
+      const heroObserver = new IntersectionObserver(
+        ([entry]) => (heroVisible = entry.isIntersecting),
+        { threshold: 0.01 }
+      );
+      heroObserver.observe(canvasDiv.current);
+
       const animate = () => {
         requestAnimationFrame(animate);
+        if (!heroVisible || document.hidden) return;
         if (headBone) {
           handleHeadRotation(
             headBone,
@@ -128,6 +140,7 @@ const Scene = () => {
       animate();
       return () => {
         clearTimeout(debounce);
+        heroObserver.disconnect();
         scene.clear();
         renderer.dispose();
         window.removeEventListener("resize", () =>
