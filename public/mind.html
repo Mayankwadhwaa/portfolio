@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>M.I.N.D — being built right now</title>
+    <meta name="robots" content="noindex" />
+    <meta name="description" content="M.I.N.D — a Personal Intelligence Operating System orchestrating a living mesh of agents. Being built right now." />
+    <style>
+      :root {
+        --bg: #02060c;
+        --cyan: #38e8ff;
+        --cyan-soft: #b6f5ff;
+        --muted: #5a7c8a;
+        --ink: #eafcff;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        background: radial-gradient(150% 130% at 50% 45%, #061a28 0%, var(--bg) 58%, #01030a 100%), #01030a;
+        color: var(--ink);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        overflow: hidden; position: relative;
+      }
+      canvas#mesh { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; }
+      /* gentle center calm so the title stays legible, but agents still cover the whole screen */
+      .focus { position: fixed; inset: 0; z-index: 2; pointer-events: none;
+        background: radial-gradient(42% 40% at 50% 47%, rgba(2,6,12,0.66) 0%, rgba(2,6,12,0.18) 50%, transparent 72%); }
+      .vignette { position: fixed; inset: 0; z-index: 2; pointer-events: none;
+        background: radial-gradient(95% 95% at 50% 50%, transparent 58%, rgba(0,0,0,0.62) 100%); }
+      .scan { position: fixed; inset: 0; z-index: 6; pointer-events: none; opacity: .22;
+        background: repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,0,0,0.25) 3px);
+        animation: scan 9s linear infinite; }
+      @keyframes scan { to { background-position: 0 520px; } }
+
+      .stage { position: relative; z-index: 4; height: 100%; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 4vw;
+        transform: translate(calc(var(--px,0) * -1), calc(var(--py,0) * -1)); transition: transform .3s ease-out; }
+
+      /* ===== living M.I.N.D wordmark ===== */
+      .title {
+        font-size: clamp(88px, 20vw, 360px); font-weight: 800; line-height: .88; letter-spacing: -0.02em;
+        background: linear-gradient(110deg, #ffffff 0%, #cdf7ff 28%, var(--cyan) 46%, #ffffff 58%, #bdf3ff 74%, #ffffff 100%);
+        background-size: 280% 100%;
+        -webkit-background-clip: text; background-clip: text;
+        -webkit-text-fill-color: transparent; color: transparent;
+        animation: sheen 7s linear infinite, breathe 3.6s ease-in-out infinite;
+      }
+      .title .d { -webkit-text-fill-color: var(--cyan); }
+      @keyframes sheen { to { background-position: -280% 0; } }
+      @keyframes breathe {
+        0%, 100% {
+          filter: drop-shadow(0 0 16px rgba(56,232,255,0.35)) drop-shadow(0 0 44px rgba(56,232,255,0.18));
+        }
+        50% {
+          filter: drop-shadow(0 0 34px rgba(56,232,255,0.7)) drop-shadow(0 0 90px rgba(56,232,255,0.42));
+        }
+      }
+
+      .role { margin-top: 20px; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: clamp(11px, 1.5vw, 16px); letter-spacing: .5em; text-transform: uppercase;
+        color: var(--cyan-soft); padding-left: .5em; }
+      .built { margin-top: 30px; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: clamp(15px, 2.2vw, 26px); letter-spacing: .14em; color: var(--ink);
+        min-height: 1.4em; text-shadow: 0 0 18px rgba(56,232,255,.45); }
+      .built .cursor { display: inline-block; width: 12px; height: 1.02em; vertical-align: -2px;
+        background: var(--cyan); margin-left: 4px; box-shadow: 0 0 10px var(--cyan); animation: blink 1s steps(1) infinite; }
+      @keyframes blink { 50% { opacity: 0; } }
+
+      .corner { position: fixed; z-index: 6; font-family: ui-monospace, Menlo, monospace; font-size: 10px;
+        letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+      .corner b { color: var(--cyan-soft); font-weight: 600; }
+      .c-tl { top: 28px; left: 30px; } .c-tr { top: 28px; right: 30px; text-align: right; }
+      .c-bl { bottom: 28px; left: 30px; } .c-br { bottom: 28px; right: 30px; text-align: right; }
+
+      .back { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); z-index: 7;
+        font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: .22em;
+        text-transform: uppercase; color: var(--muted); text-decoration: none; transition: .25s; }
+      .back:hover { color: var(--ink); transform: translateX(-50%) translateY(-2px); }
+
+      .stage > * { opacity: 0; animation: rise 1s ease both; }
+      .title { animation: rise 1s ease both, sheen 7s linear infinite, breathe 3.6s ease-in-out infinite; animation-delay: .15s, 0s, 0s; }
+      .role { animation-delay: .4s; } .built { animation-delay: .55s; }
+      @keyframes rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+      @media (prefers-reduced-motion: reduce) { .scan, .cursor, .title { animation: none; } .stage>*{animation:none;opacity:1;} }
+    </style>
+  </head>
+  <body>
+    <canvas id="mesh"></canvas>
+    <div class="focus"></div>
+    <div class="vignette"></div>
+    <div class="scan"></div>
+
+    <div class="corner c-tl">M.I.N.D · KERNEL<br /><b>v0.1·α</b></div>
+    <div class="corner c-tr">ORCHESTRATION<br /><b id="status">CONVERGING</b></div>
+    <div class="corner c-bl">UTC <b id="clock">--:--:--</b></div>
+    <div class="corner c-br">UPLINK <b>SECURE</b></div>
+
+    <main class="stage">
+      <h1 class="title">M<span class="d">.</span>I<span class="d">.</span>N<span class="d">.</span>D</h1>
+      <div class="role">Personal Intelligence Operating System</div>
+      <div class="built" id="built">&nbsp;</div>
+    </main>
+
+    <a class="back" href="/">← back to mayankwadhwa.com</a>
+
+    <script>
+      /* =========================================================
+         A full-screen living mesh: agents spread across the
+         entire viewport, all active at once, exchanging messages
+         (light pulses) along their links.
+      ========================================================= */
+      const cv = document.getElementById("mesh");
+      const ctx = cv.getContext("2d");
+      let W, H, DPR, nodes = [], edges = [], pulses = [];
+
+      const rand = (a, b) => a + Math.random() * (b - a);
+      const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+      function build() {
+        nodes = []; edges = []; pulses = [];
+        const N = Math.round(clamp((W * H) / 1150, 420, 1400)); // covers the whole screen
+        for (let i = 0; i < N; i++) {
+          const bx = Math.random() * W, by = Math.random() * H;
+          nodes.push({
+            bx, by, x: bx, y: by,
+            oph: Math.random() * Math.PI * 2, ospd: rand(0.12, 0.4), amp: rand(3, 8),
+            tph: Math.random() * Math.PI * 2, tspd: rand(0.6, 2.0),
+          });
+        }
+        // proximity graph via spatial grid (computed once on base positions)
+        const spacing = Math.sqrt((W * H) / N);
+        const radius = spacing * 1.75;
+        const cell = radius;
+        const cols = Math.ceil(W / cell), rows = Math.ceil(H / cell);
+        const grid = Array.from({ length: cols * rows }, () => []);
+        const ci = (x, y) => clamp((x / cell) | 0, 0, cols - 1) + clamp((y / cell) | 0, 0, rows - 1) * cols;
+        nodes.forEach((n, i) => grid[ci(n.bx, n.by)].push(i));
+        const r2 = radius * radius, deg = new Int8Array(nodes.length);
+        for (let i = 0; i < nodes.length; i++) {
+          if (deg[i] >= 4) continue;
+          const n = nodes[i], gx = clamp((n.bx / cell) | 0, 0, cols - 1), gy = clamp((n.by / cell) | 0, 0, rows - 1);
+          for (let ox = -1; ox <= 1; ox++) for (let oy = -1; oy <= 1; oy++) {
+            const gxx = gx + ox, gyy = gy + oy;
+            if (gxx < 0 || gyy < 0 || gxx >= cols || gyy >= rows) continue;
+            for (const j of grid[gxx + gyy * cols]) {
+              if (j <= i || deg[i] >= 4 || deg[j] >= 4) continue;
+              const dx = n.bx - nodes[j].bx, dy = n.by - nodes[j].by;
+              if (dx * dx + dy * dy < r2) { edges.push([i, j]); deg[i]++; deg[j]++; }
+            }
+          }
+        }
+        const NP = Math.min(160, (edges.length / 12) | 0);
+        for (let i = 0; i < NP; i++) pulses.push({ e: (Math.random() * edges.length) | 0, t: Math.random(), v: rand(0.006, 0.02) });
+      }
+
+      function resize() {
+        DPR = Math.min(window.devicePixelRatio || 1, 2);
+        W = cv.clientWidth; H = cv.clientHeight;
+        cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        build();
+      }
+
+      function frame() {
+        const ts = performance.now() / 1000;
+        for (const n of nodes) {
+          const a = n.oph + ts * n.ospd;
+          n.x = n.bx + Math.cos(a) * n.amp;
+          n.y = n.by + Math.sin(a) * n.amp;
+        }
+        ctx.clearRect(0, 0, W, H);
+
+        // links — one batched faint web across the whole screen
+        ctx.lineWidth = 0.6; ctx.strokeStyle = "rgba(56,232,255,0.11)";
+        ctx.beginPath();
+        for (let i = 0; i < edges.length; i++) {
+          const a = nodes[edges[i][0]], b = nodes[edges[i][1]];
+          ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+        }
+        ctx.stroke();
+
+        // agents — every node twinkles (all working simultaneously)
+        for (const n of nodes) {
+          const tw = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(ts * n.tspd + n.tph));
+          ctx.globalAlpha = 0.25 + tw * 0.7;
+          ctx.fillStyle = tw > 0.85 ? "#ffffff" : "#7fefff";
+          const s = 1 + tw * 1.6;
+          ctx.fillRect(n.x - s / 2, n.y - s / 2, s, s);
+        }
+        ctx.globalAlpha = 1;
+
+        // messages flowing along links, everywhere at once
+        ctx.shadowColor = "#38e8ff"; ctx.shadowBlur = 7; ctx.fillStyle = "#dffbff";
+        for (const p of pulses) {
+          p.t += p.v;
+          if (p.t >= 1) { p.t = 0; p.e = (Math.random() * edges.length) | 0; p.v = rand(0.006, 0.02); }
+          const a = nodes[edges[p.e][0]], b = nodes[edges[p.e][1]];
+          const x = a.x + (b.x - a.x) * p.t, y = a.y + (b.y - a.y) * p.t;
+          ctx.beginPath(); ctx.arc(x, y, 1.7, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+
+        requestAnimationFrame(frame);
+      }
+
+      /* ===== decoding "I AM BEING BUILT RIGHT NOW" (the earlier animation) ===== */
+      const phrase = "I AM BEING BUILT RIGHT NOW";
+      const glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#%&/<>*+";
+      const bEl = document.getElementById("built");
+      const cursor = '<span class="cursor"></span>';
+      function decode() {
+        let frame = 0;
+        const iv = setInterval(() => {
+          let out = "";
+          for (let i = 0; i < phrase.length; i++) {
+            if (phrase[i] === " ") { out += " "; continue; }
+            out += i < frame / 2 ? phrase[i] : glyphs[(Math.random() * glyphs.length) | 0];
+          }
+          bEl.innerHTML = out + cursor;
+          frame++;
+          if (frame / 2 > phrase.length) { clearInterval(iv); bEl.innerHTML = phrase + cursor; }
+        }, 45);
+      }
+      setTimeout(() => { decode(); setInterval(decode, 5200); }, 900);
+
+      /* clock + status */
+      const clock = document.getElementById("clock");
+      setInterval(() => clock.textContent = new Date().toISOString().slice(11, 19), 1000);
+      const statuses = ["CONVERGING", "ORCHESTRATING", "SYNCING", "REASONING"];
+      let si = 0; setInterval(() => { si = (si + 1) % statuses.length; document.getElementById("status").textContent = statuses[si]; }, 2200);
+
+      addEventListener("resize", resize);
+      addEventListener("mousemove", e => {
+        document.documentElement.style.setProperty("--px", (e.clientX / innerWidth - 0.5) * 16 + "px");
+        document.documentElement.style.setProperty("--py", (e.clientY / innerHeight - 0.5) * 16 + "px");
+      });
+      resize(); frame();
+    </script>
+  </body>
+</html>

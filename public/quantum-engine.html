@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quantum Engine — Out very soon</title>
+    <meta name="robots" content="noindex" />
+    <meta
+      name="description"
+      content="Quantum Engine — a concise & universal swarm intelligence engine. Launching very soon."
+    />
+    <style>
+      :root {
+        --bg: #060509;
+        --amber: #ffb347;
+        --amber-hot: #ffd17a;
+        --violet: #9a6bff;
+        --ink: #f4f1ea;
+        --muted: #8a8597;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+          Roboto, Helvetica, Arial, sans-serif;
+        overflow: hidden;
+        position: relative;
+        -webkit-font-smoothing: antialiased;
+      }
+      /* aurora wash behind everything */
+      .aurora {
+        position: fixed;
+        inset: -20%;
+        background:
+          radial-gradient(40% 50% at 22% 28%, rgba(154, 107, 255, 0.22), transparent 70%),
+          radial-gradient(45% 55% at 80% 72%, rgba(255, 179, 71, 0.20), transparent 72%),
+          radial-gradient(60% 60% at 50% 50%, rgba(255, 209, 122, 0.06), transparent 75%);
+        filter: blur(20px);
+        animation: drift 18s ease-in-out infinite alternate;
+        z-index: 0;
+      }
+      @keyframes drift {
+        0%   { transform: translate3d(-2%, -1%, 0) scale(1.05); }
+        100% { transform: translate3d(3%, 2%, 0) scale(1.15); }
+      }
+      canvas#swarm {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+      /* vignette to focus the centre */
+      .vignette {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(70% 70% at 50% 45%, transparent 40%, rgba(0,0,0,0.65) 100%);
+        z-index: 2;
+        pointer-events: none;
+      }
+      .wrap {
+        position: relative;
+        z-index: 3;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 6vw;
+      }
+      .brand {
+        font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+        letter-spacing: 0.42em;
+        font-size: clamp(11px, 1.4vw, 15px);
+        font-weight: 700;
+        color: var(--ink);
+        text-transform: uppercase;
+        margin-bottom: 38px;
+        opacity: 0;
+        animation: rise 0.9s 0.1s ease both;
+      }
+      .brand .dot { color: var(--amber); }
+      .eyebrow {
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: clamp(10px, 1.1vw, 13px);
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 22px;
+        opacity: 0;
+        animation: rise 0.9s 0.25s ease both;
+      }
+      .eyebrow b { color: var(--amber); font-weight: 600; }
+      h1 {
+        font-size: clamp(44px, 9vw, 132px);
+        line-height: 0.92;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        background: linear-gradient(180deg, #fff 0%, var(--amber-hot) 55%, var(--amber) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: 0 0 60px rgba(255, 179, 71, 0.25);
+        opacity: 0;
+        animation: rise 1s 0.4s ease both;
+      }
+      h1 .soon {
+        display: block;
+        background: linear-gradient(180deg, var(--violet) 0%, #c9b4ff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: 0 0 60px rgba(154, 107, 255, 0.3);
+      }
+      .sub {
+        max-width: 620px;
+        margin-top: 28px;
+        font-size: clamp(14px, 1.6vw, 18px);
+        line-height: 1.6;
+        color: #cfc9d8;
+        font-weight: 300;
+        opacity: 0;
+        animation: rise 1s 0.55s ease both;
+      }
+      .sub b { color: var(--ink); font-weight: 600; }
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 40px;
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 12px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 10px 18px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 100px;
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(6px);
+        opacity: 0;
+        animation: rise 1s 0.7s ease both;
+      }
+      .pulse {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--amber);
+        box-shadow: 0 0 0 0 rgba(255, 179, 71, 0.6);
+        animation: ping 1.8s ease-out infinite;
+      }
+      @keyframes ping {
+        0%   { box-shadow: 0 0 0 0 rgba(255, 179, 71, 0.55); }
+        70%  { box-shadow: 0 0 0 12px rgba(255, 179, 71, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 179, 71, 0); }
+      }
+      .back {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 4;
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--muted);
+        text-decoration: none;
+        transition: color 0.25s, transform 0.25s;
+        opacity: 0;
+        animation: rise 1s 0.9s ease both;
+      }
+      .back:hover { color: var(--ink); transform: translateX(-50%) translateY(-2px); }
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(18px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .aurora, .pulse { animation: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="aurora"></div>
+    <canvas id="swarm"></canvas>
+    <div class="vignette"></div>
+
+    <main class="wrap">
+      <div class="brand">QUANTUM<span class="dot">·</span>ENGINE</div>
+      <div class="eyebrow">
+        Concise &amp; Universal Swarm Intelligence Engine &nbsp;·&nbsp;
+        <b>v0.1</b>
+      </div>
+      <h1>
+        I'll be out
+        <span class="soon">very soon.</span>
+      </h1>
+      <p class="sub">
+        Upload reports, predict the future. <b>Quantum Engine</b> spins a single
+        document into a parallel world of <b>million-scale agents</b> — rehearsing
+        the future so decisions prevail. Final assembly in progress.
+      </p>
+      <div class="status">
+        <span class="pulse"></span> Booting reality — agents converging
+      </div>
+    </main>
+
+    <a class="back" href="/">← back to mayankwadhwa.com</a>
+
+    <script>
+      // Lightweight agent-swarm: drifting nodes that link when close, with a
+      // soft "attractor" pull toward the centre — a nod to swarm convergence.
+      const canvas = document.getElementById("swarm");
+      const ctx = canvas.getContext("2d");
+      let w, h, dpr, nodes;
+      const COLORS = ["#ffb347", "#ffd17a", "#9a6bff"];
+
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        w = canvas.clientWidth;
+        h = canvas.clientHeight;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const count = Math.round(Math.min(120, (w * h) / 14000));
+        nodes = Array.from({ length: count }, () => ({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.35,
+          vy: (Math.random() - 0.5) * 0.35,
+          r: Math.random() * 1.6 + 0.6,
+          c: COLORS[(Math.random() * COLORS.length) | 0],
+        }));
+      }
+
+      function frame() {
+        ctx.clearRect(0, 0, w, h);
+        const cx = w / 2,
+          cy = h * 0.46;
+        for (const n of nodes) {
+          // gentle pull toward centre (swarm convergence)
+          n.vx += (cx - n.x) * 0.0000045;
+          n.vy += (cy - n.y) * 0.0000045;
+          n.x += n.vx;
+          n.y += n.vy;
+          if (n.x < 0 || n.x > w) n.vx *= -1;
+          if (n.y < 0 || n.y > h) n.vy *= -1;
+        }
+        // links
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const a = nodes[i],
+              b = nodes[j];
+            const dx = a.x - b.x,
+              dy = a.y - b.y;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < 14000) {
+              const o = (1 - d2 / 14000) * 0.5;
+              ctx.strokeStyle = `rgba(255, 188, 110, ${o})`;
+              ctx.lineWidth = 0.6;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+          }
+        }
+        // nodes
+        for (const n of nodes) {
+          ctx.beginPath();
+          ctx.fillStyle = n.c;
+          ctx.shadowColor = n.c;
+          ctx.shadowBlur = 8;
+          ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+        requestAnimationFrame(frame);
+      }
+
+      window.addEventListener("resize", resize);
+      resize();
+      frame();
+    </script>
+  </body>
+</html>

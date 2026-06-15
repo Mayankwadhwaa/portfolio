@@ -5,36 +5,56 @@ import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(useGSAP);
 
-const projects = [
+type Project = {
+  name: string;
+  category: string;
+  stack: string;
+  image: string;
+  link?: string;
+};
+
+const projects: Project[] = [
   {
     name: "World Tech Monitor",
     category: "AI  System",
     stack: "LLMs, LangGraph, Python, Vector Search, RAG   ",
+    image: "/images/worldtechmonitor.png",
+    link: "https://worldtechmonitor.vercel.app/",
   },
   {
     name: "Quantum Migration Decision Engine",
     category: "AI Intelligence System",
     stack: "LLMs, GraphRAG, OASIS, Node.js, ",
+    image: "/images/quantumengine.png",
+    link: "/quantum-engine.html",
   },
   {
-    name: "[FILL — PQC Tool]",
-    category: "Deep Tech",
-    stack: "Cryptography, PQC, Systems Design",
+    name: "M.I.N.D",
+    category: "Personal Intelligence Operating System",
+    stack: "Multi-Agent Orchestration, Autonomous Agent Ecosystems, Loop Engineering",
+    image: "/images/mind.png",
+    link: "/mind.html",
   },
   {
-    name: "[FILL — Quantum Simulation]",
-    category: "Emerging Tech",
-    stack: "Python, Simulation, Research Prototyping",
+    name: "Second Brain",
+    category: "Personal Knowledge System",
+    stack: "Obsidian + Claude Code",
+    image: "/images/second-brain.png",
+    link: "/second-brain.html",
   },
   {
-    name: "[FILL — Multi-Agent System]",
-    category: "AI Systems",
-    stack: "Agents, Orchestration, RAG, Execution Loops",
+    name: "PQC Sandbox",
+    category: "Post-Quantum Security",
+    stack: "Post-Quantum Cryptography, Threat Modeling",
+    image: "/images/pqc-sandbox.png",
+    link: "/pqc-sandbox.html",
   },
   {
-    name: "[FILL — Emerging Tech Platform]",
-    category: "Products",
-    stack: "Full-stack, Architecture, Product",
+    name: "Moltbook",
+    category: "Autonomous AI Agent",
+    stack: "Autonomous Agents, LLMs, Social Simulation, APIs",
+    image: "/images/moltbook.webp",
+    link: "https://www.moltbook.com/u/Kukuclaw",
   },
 ];
 
@@ -94,7 +114,11 @@ const Work = () => {
                 <h4>Stack & focus</h4>
                 <p>{project.stack}</p>
               </div>
-              <WorkImage image="/images/placeholder.webp" alt="" />
+              <WorkImage
+                image={project.image}
+                link={project.link}
+                alt={project.name}
+              />
             </div>
           ))}
         </div>

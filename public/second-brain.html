@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Second Brain — live in Mayank's environment</title>
+    <meta name="robots" content="noindex" />
+    <meta name="description" content="Second Brain — an Obsidian + Claude Code knowledge system, already up and running in Mayank's local environment." />
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=jetbrains-mono@400,500&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0a0613;
+        --purple: #b06bff;
+        --purple-soft: #d9b8ff;
+        --magenta: #e879c9;
+        --ink: #f4ecff;
+        --muted: #7a6b95;
+        --display: "Clash Display", system-ui, -apple-system, "Segoe UI", sans-serif;
+        --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        background: radial-gradient(135% 120% at 50% 40%, #170a2b 0%, var(--bg) 58%, #05030a 100%), var(--bg);
+        color: var(--ink); font-family: var(--display); overflow: hidden; position: relative;
+      }
+      canvas#net { position: fixed; inset: 0; z-index: 0; opacity: .6; }
+
+      /* the blinking brain in the background */
+      .brain {
+        position: fixed; left: 50%; top: 44%; transform: translate(-50%, -50%);
+        z-index: 1; font-size: clamp(280px, 52vw, 680px); line-height: 1;
+        filter: drop-shadow(0 0 60px rgba(176,107,255,0.5)) drop-shadow(0 0 120px rgba(232,121,201,0.3));
+        animation: think 3.4s ease-in-out infinite; user-select: none; pointer-events: none;
+        opacity: .9;
+      }
+      /* irregular "firing" blink — double pulse like a heartbeat of thought */
+      @keyframes think {
+        0%   { opacity: .42; filter: drop-shadow(0 0 40px rgba(176,107,255,0.35)) drop-shadow(0 0 90px rgba(232,121,201,0.18)); transform: translate(-50%,-50%) scale(1); }
+        12%  { opacity: .95; filter: drop-shadow(0 0 80px rgba(176,107,255,0.85)) drop-shadow(0 0 150px rgba(232,121,201,0.5)); transform: translate(-50%,-50%) scale(1.025); }
+        24%  { opacity: .5; }
+        36%  { opacity: .9; filter: drop-shadow(0 0 70px rgba(176,107,255,0.7)); transform: translate(-50%,-50%) scale(1.015); }
+        100% { opacity: .42; transform: translate(-50%,-50%) scale(1); }
+      }
+      .focus { position: fixed; inset: 0; z-index: 2; pointer-events: none;
+        background: radial-gradient(48% 50% at 50% 47%, rgba(10,6,19,0.72) 0%, rgba(10,6,19,0.3) 50%, transparent 74%); }
+      .vignette { position: fixed; inset: 0; z-index: 2; pointer-events: none;
+        background: radial-gradient(96% 96% at 50% 50%, transparent 56%, rgba(0,0,0,0.6) 100%); }
+
+      .stage { position: relative; z-index: 4; height: 100%; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 6vw; }
+      .eyebrow { font-family: var(--mono); font-size: clamp(10px, 1.3vw, 13px); letter-spacing: .4em;
+        text-transform: uppercase; color: var(--purple-soft); margin-bottom: 22px;
+        display: inline-flex; align-items: center; gap: 10px; opacity: 0; animation: fade 1s .2s ease forwards; }
+      .eyebrow .live { width: 8px; height: 8px; border-radius: 50%; background: #4ade80;
+        box-shadow: 0 0 0 0 rgba(74,222,128,.6); animation: ping 1.7s ease-out infinite; }
+      @keyframes ping { 0%{box-shadow:0 0 0 0 rgba(74,222,128,.55)} 70%{box-shadow:0 0 0 12px rgba(74,222,128,0)} 100%{box-shadow:0 0 0 0 transparent} }
+
+      h1 {
+        font-family: var(--display); font-weight: 600; line-height: 1.04; letter-spacing: -0.01em;
+        font-size: clamp(30px, 5.4vw, 76px); max-width: 16ch;
+        background: linear-gradient(110deg, #ffffff 0%, #e9d6ff 40%, var(--purple) 70%, #ffd9f3 100%);
+        background-size: 220% 100%; -webkit-background-clip: text; background-clip: text;
+        -webkit-text-fill-color: transparent; color: transparent;
+        filter: drop-shadow(0 0 26px rgba(176,107,255,0.3));
+        opacity: 0; animation: rise 1s .4s ease forwards;
+      }
+      h1 .nm { color: var(--magenta); -webkit-text-fill-color: var(--magenta); }
+
+      .meta { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; color: var(--muted);
+        margin-top: 22px; opacity: 0; animation: fade 1s .7s ease forwards; }
+      .meta b { color: var(--purple-soft); font-weight: 500; }
+
+      .cta {
+        margin-top: 40px; display: inline-flex; align-items: center; gap: 12px;
+        font-family: var(--mono); font-size: 13px; letter-spacing: .14em; text-transform: uppercase;
+        color: #fff; text-decoration: none; padding: 16px 28px; border-radius: 12px;
+        background: linear-gradient(120deg, rgba(176,107,255,0.22), rgba(232,121,201,0.16));
+        border: 1px solid rgba(176,107,255,0.5); backdrop-filter: blur(8px);
+        box-shadow: 0 0 30px rgba(176,107,255,0.25); transition: .25s;
+        opacity: 0; animation: rise 1s .9s ease forwards;
+      }
+      .cta:hover { border-color: var(--magenta); box-shadow: 0 0 46px rgba(232,121,201,0.45);
+        transform: translateY(-2px); }
+      .cta .arrow { transition: transform .25s; }
+      .cta:hover .arrow { transform: translateX(5px); }
+
+      .back { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); z-index: 4;
+        font-family: var(--mono); font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+        color: var(--muted); text-decoration: none; transition: .25s; opacity: 0; animation: fade 1s 1.2s ease forwards; }
+      .back:hover { color: var(--ink); transform: translateX(-50%) translateY(-2px); }
+
+      @keyframes fade { to { opacity: 1; } }
+      @keyframes rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+      @media (prefers-reduced-motion: reduce) { .brain { animation: none; opacity: .55; } .stage>* { animation: none; opacity: 1; } }
+    </style>
+  </head>
+  <body>
+    <canvas id="net"></canvas>
+    <div class="brain">🧠</div>
+    <div class="focus"></div>
+    <div class="vignette"></div>
+
+    <main class="stage">
+      <div class="eyebrow"><span class="live"></span> Second Brain · Obsidian + Claude Code</div>
+      <h1>I'm already up and running in <span class="nm">Mayank's</span> local environment.</h1>
+      <div class="meta">a self-hosted knowledge graph · thousands of notes, linked &amp; alive</div>
+      <a class="cta" href="/second-brain-sim.html">See my digital simulation <span class="arrow">→</span></a>
+    </main>
+
+    <a class="back" href="/">← back to mayankwadhwa.com</a>
+
+    <script>
+      /* ambient knowledge-graph network — echoes the real Obsidian graph */
+      const cv = document.getElementById("net"), bx = cv.getContext("2d");
+      let W, H, DPR, nodes = [], edges = [], pulses = [];
+      const rand = (a, b) => a + Math.random() * (b - a);
+      function build() {
+        nodes = []; edges = []; pulses = [];
+        const N = Math.round(Math.min(420, (W * H) / 4200));
+        for (let i = 0; i < N; i++) nodes.push({
+          bx: Math.random() * W, by: Math.random() * H, x: 0, y: 0,
+          oph: Math.random() * 6.28, osp: rand(0.1, 0.4), amp: rand(3, 9),
+          tph: Math.random() * 6.28, tsp: rand(0.6, 1.8), big: Math.random() > 0.9,
+        });
+        const sp = Math.sqrt((W * H) / N), r = sp * 1.7, r2 = r * r;
+        for (let i = 0; i < nodes.length; i++) {
+          let deg = 0;
+          for (let j = i + 1; j < nodes.length && deg < 3; j++) {
+            const dx = nodes[i].bx - nodes[j].bx, dy = nodes[i].by - nodes[j].by;
+            if (dx * dx + dy * dy < r2) { edges.push([i, j]); deg++; }
+          }
+        }
+        const NP = Math.min(70, (edges.length / 12) | 0);
+        for (let i = 0; i < NP; i++) pulses.push({ e: (Math.random() * edges.length) | 0, t: Math.random(), v: rand(0.006, 0.018) });
+      }
+      function resize() {
+        DPR = Math.min(devicePixelRatio || 1, 2); W = cv.clientWidth = innerWidth; H = cv.clientHeight = innerHeight;
+        cv.width = W * DPR; cv.height = H * DPR; bx.setTransform(DPR, 0, 0, DPR, 0, 0); build();
+      }
+      function frame() {
+        const ts = performance.now() / 1000;
+        for (const n of nodes) { const a = n.oph + ts * n.osp; n.x = n.bx + Math.cos(a) * n.amp; n.y = n.by + Math.sin(a) * n.amp; }
+        bx.clearRect(0, 0, W, H);
+        bx.lineWidth = 0.5; bx.strokeStyle = "rgba(176,107,255,0.12)"; bx.beginPath();
+        for (const e of edges) { const a = nodes[e[0]], b = nodes[e[1]]; bx.moveTo(a.x, a.y); bx.lineTo(b.x, b.y); }
+        bx.stroke();
+        for (const n of nodes) {
+          const tw = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(ts * n.tsp + n.tph));
+          bx.globalAlpha = 0.25 + tw * 0.6;
+          bx.fillStyle = tw > 0.85 ? "#ffffff" : (n.big ? "#e879c9" : "#c79bff");
+          const s = (n.big ? 2.4 : 1.2) + tw * 1.4;
+          bx.beginPath(); bx.arc(n.x, n.y, s, 0, 6.28); bx.fill();
+        }
+        bx.globalAlpha = 1; bx.shadowColor = "#d9b8ff"; bx.shadowBlur = 8; bx.fillStyle = "#fff";
+        for (const p of pulses) {
+          p.t += p.v; if (p.t >= 1) { p.t = 0; p.e = (Math.random() * edges.length) | 0; }
+          const a = nodes[edges[p.e][0]], b = nodes[edges[p.e][1]];
+          bx.beginPath(); bx.arc(a.x + (b.x - a.x) * p.t, a.y + (b.y - a.y) * p.t, 1.6, 0, 6.28); bx.fill();
+        }
+        bx.shadowBlur = 0; requestAnimationFrame(frame);
+      }
+      addEventListener("resize", resize); resize(); frame();
+    </script>
+  </body>
+</html>
