@@ -58,8 +58,15 @@ const projects: Project[] = [
   },
 ];
 
+const isTouch = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+
 const Work = () => {
   useGSAP(() => {
+    // On touch devices the pinned horizontal scrub is jittery; skip it and let
+    // the cards stack & scroll vertically (see Work.css touch media query).
+    if (isTouch()) return;
     const getTranslateX = () => {
       const box = document.getElementsByClassName("work-box");
       if (!box.length) return 0;

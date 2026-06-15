@@ -16,6 +16,11 @@ const MainContainer = ({ children }: PropsWithChildren) => {
   const [isDesktopView, setIsDesktopView] = useState<boolean>(
     window.innerWidth > 1024
   );
+  // Touch devices (phones, iPads in any orientation) skip the heavy physics
+  // tech-stack scene — it's the laggy part there. Desktop keeps it, full quality.
+  const isTouch =
+    typeof window !== "undefined" &&
+    window.matchMedia("(hover: none) and (pointer: coarse)").matches;
 
   useEffect(() => {
     const resizeHandler = () => {
@@ -43,7 +48,7 @@ const MainContainer = ({ children }: PropsWithChildren) => {
             <WhatIDo />
             <Career />
             <Work />
-            {isDesktopView && (
+            {isDesktopView && !isTouch && (
               <Suspense fallback={<div>Loading....</div>}>
                 <TechStack />
               </Suspense>

@@ -208,3 +208,42 @@
     height: auto;
   }
 }
+
+/* Touch devices (phones, iPads): no pinned horizontal scroll — stack the
+   project cards vertically so they flow with the page (no jitter). */
+@media (hover: none) and (pointer: coarse) {
+  .work-section {
+    height: auto;
+    min-height: 0;
+  }
+  .work-container {
+    height: auto;
+    align-content: normal;
+  }
+  .work-flex {
+    flex-direction: column;
+    height: auto;
+    width: 100%;
+    margin-left: 0;
+    padding-right: 0;
+    gap: 0;
+    transform: none !important;
+  }
+  .work-flex::before,
+  .work-flex::after {
+    display: none;
+  }
+  .work-flex .work-box,
+  .work-flex .work-box:nth-child(even) {
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+    border-right: none;
+    border-bottom: 1px solid #363636;
+    padding: 40px 26px;
+    gap: 26px;
+  }
+  .work-image img {
+    max-height: 320px;
+  }
+}
